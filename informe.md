@@ -85,13 +85,13 @@ Raíz del Error Cuadrático Medio (RMSE): 42.31
 Gráficos generados (Figuras 1a-1d):
 
 **Figura 1a.** Gráfica de dispersión de Valores Reales vs. Predicciones.
-![](graficos_bike\predicciones_vs_reales.png)
+![](predicciones_vs_reales.png)
 **Figura 1b.** Análisis de Residuos (Predicciones vs. Residuos).  
-![](graficos_bike\analisis_residuos.png)
+![](analisis_residuos.png)
 **Figura 1c.** Histograma de la Distribución de Errores (Residuos).  
-![](graficos_bike\distribucion_errores.png)
+![](distribucion_errores.png)
 **Figura 1d.** Importancia de las Características según el modelo Random Forest.  
-![](graficos_bike\importancia_caracteristicas.png)
+![](importancia_caracteristicas.png)
 *Fuente: elaboración propia.*
 
 #### 1.4. Discusión
@@ -154,7 +154,7 @@ weighted avg       0.80      0.77      0.78      1407
 ```
 
 **Figura 2.** Matriz de Confusión del Modelo Optimizado (XGBoost).  
-![](graficos_churn\matriz_confusion_optimizado.png)
+![](matriz_confusion_optimizado.png)
 *Fuente: elaboración propia.*
 
 #### 2.4. Discusión
