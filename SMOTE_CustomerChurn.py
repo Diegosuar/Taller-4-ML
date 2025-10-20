@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # Importaciones de Scikit-Learn y XGBoost
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -17,6 +18,12 @@ from imblearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTE
 from sklearn.metrics import classification_report, roc_auc_score, ConfusionMatrixDisplay
 from scipy.stats import randint, uniform
+
+# Crear carpeta para guardar gráficos
+output_dir = 'graficos_churn'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    print(f"Carpeta '{output_dir}' creada.\n")
 
 # --- 1. Carga y Preparación de Datos ---
 print("--- 1. Cargando y Preprocesando Datos ---")
@@ -55,7 +62,6 @@ print("Datos listos para el entrenamiento.\n")
 
 # --- 2. Selección de Modelos ---
 print("--- 2. Realizando Selección de Modelos ---")
-# Se comparan tres algoritmos diferentes usando el mismo pipeline de preprocesamiento y SMOTE.
 
 # Definir los pipelines para cada modelo
 pipeline_lr = Pipeline([
@@ -97,24 +103,40 @@ for nombre, auc in resultados.items():
     print(f"Modelo: {nombre:<20} | ROC AUC: {auc:.4f}")
 print("El modelo XGBoost muestra el mejor rendimiento inicial.\n")
 
+# Guardar gráfico comparativo de modelos
+fig, ax = plt.subplots(figsize=(10, 6))
+modelos_list = list(resultados.keys())
+auc_scores = list(resultados.values())
+colores = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+bars = ax.bar(modelos_list, auc_scores, color=colores, alpha=0.7, edgecolor='black')
+ax.set_ylabel('ROC AUC Score', fontsize=12)
+ax.set_title('Comparación de Modelos - Selección Inicial', fontsize=14, fontweight='bold')
+ax.set_ylim([0, 1])
+for i, (bar, score) in enumerate(zip(bars, auc_scores)):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02, f'{score:.4f}', ha='center', fontsize=11)
+plt.grid(axis='y', alpha=0.3)
+output_path = os.path.join(output_dir, 'comparacion_modelos_seleccion.png')
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Gráfico guardado en: {output_path}")
+plt.close()
 
 # --- 3. Optimización con RandomizedSearchCV para XGBoost ---
-print("--- 3. Optimizando XGBoost con RandomizedSearchCV ---")
+print("\n--- 3. Optimizando XGBoost con RandomizedSearchCV ---")
 
-# Espacio de búsqueda de hiperparámetros para SMOTE y XGBoost
+# Espacio de búsqueda de hiperparámetros
 param_distributions = {
     'smote__k_neighbors': randint(3, 15),
     'classifier__n_estimators': randint(100, 600),
     'classifier__max_depth': randint(3, 12),
     'classifier__learning_rate': uniform(0.01, 0.3),
-    'classifier__subsample': uniform(0.6, 0.4) # Rango de 0.6 a 1.0
+    'classifier__subsample': uniform(0.6, 0.4)
 }
 
 # Configurar RandomizedSearchCV
 random_search = RandomizedSearchCV(
     estimator=pipeline_xgb,
     param_distributions=param_distributions,
-    n_iter=50,  # Aumentamos el número de iteraciones para una mejor búsqueda
+    n_iter=50,
     cv=5,
     scoring='roc_auc',
     n_jobs=-1,
@@ -141,7 +163,7 @@ print("Reporte de Clasificación (Modelo Optimizado):")
 print(classification_report(y_test, y_pred_final, target_names=['No Churn', 'Churn']))
 
 # Matriz de confusión
-print("Matriz de Confusión (Modelo Optimizado):")
+print("Guardando matriz de confusión...")
 fig, ax = plt.subplots(figsize=(8, 6))
 ConfusionMatrixDisplay.from_estimator(
     best_model,
@@ -151,6 +173,9 @@ ConfusionMatrixDisplay.from_estimator(
     cmap='Greens',
     ax=ax
 )
-plt.title('Matriz de Confusión del Modelo Optimizado')
+plt.title('Matriz de Confusión del Modelo Optimizado', fontsize=14, fontweight='bold')
 plt.grid(False)
+output_path = os.path.join(output_dir, 'matriz_confusion_optimizado.png')
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Gráfico guardado en: {output_path}")
 plt.show()

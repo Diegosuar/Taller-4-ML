@@ -1,9 +1,9 @@
 # Flujo de Trabajo para Detección de Fraude
 # Incluye: Preprocesamiento, SMOTE y RandomizedSearchCV
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # Importaciones de Scikit-Learn
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -13,6 +13,12 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 from imblearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTE
 from scipy.stats import randint, uniform
+
+# Crear carpeta para guardar gráficos
+output_dir = 'graficos_fraude'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    print(f"Carpeta '{output_dir}' creada.\n")
 
 # --- 1. Carga y Preparación de Datos ---
 print("--- 1. Cargando y Preprocesando Datos ---")
@@ -58,20 +64,19 @@ lr_pipeline = Pipeline([
 ])
 
 # Espacio de búsqueda de hiperparámetros
-# Para fraude, es clave maximizar el 'recall' de la clase positiva (1)
 param_distributions_lr = {
     'smote__k_neighbors': randint(3, 20),
     'classifier__C': uniform(0.1, 20),
     'classifier__solver': ['liblinear']
 }
 
-# Configurar RandomizedSearchCV, optimizando para 'recall' en la clase de Fraude
+# Configurar RandomizedSearchCV
 random_search_lr = RandomizedSearchCV(
     estimator=lr_pipeline,
     param_distributions=param_distributions_lr,
     n_iter=20,
     cv=5,
-    scoring='recall', # Métrica clave para problemas de fraude
+    scoring='recall',
     n_jobs=-1,
     random_state=42,
     verbose=1
@@ -94,7 +99,7 @@ print("Reporte de Clasificación (Modelo Optimizado):")
 print(classification_report(y_test, y_pred_optimized, target_names=['No Fraude', 'Fraude']))
 
 
-# --- 5. Visualización Comparativa ---
+# --- 5. Visualización Comparativa y Guardado ---
 print("\n--- 5. Comparando Matrices de Confusión ---")
 fig, axes = plt.subplots(1, 2, figsize=(16, 7))
 class_names = ['No Fraude', 'Fraude']
@@ -110,4 +115,10 @@ axes[1].set_title('Matriz de Confusión - Modelo Optimizado', fontsize=14)
 axes[1].grid(False)
 
 plt.suptitle('Comparación de Modelos (Normalizado)', fontsize=20)
+
+# Guardar la figura
+output_path = os.path.join(output_dir, 'comparacion_modelos.png')
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Gráfico guardado en: {output_path}")
+
 plt.show()
