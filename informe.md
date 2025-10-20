@@ -211,7 +211,7 @@ Reporte de Clasificación (Modelo Optimizado):
 ```
 
 **Figura 3.** Comparación de matrices de confusión normalizadas (baseline vs. optimizado).  
-![](graficos_fraude\comparacion_modelos.png)
+![](comparacion_modelos.png)
 *Fuente: Ejecución del script `SMOTE.py`.*
 
 #### 3.4. Discusión
